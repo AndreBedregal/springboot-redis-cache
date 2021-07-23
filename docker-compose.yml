@@ -1,0 +1,48 @@
+version: '3.5'
+
+networks:
+  redis_network:
+    name: redis_network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+
+services:
+
+  postgresql:
+    container_name: postgresql-springboot-redis-cache
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: springboot_redis_cache
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      redis_network:
+    ports:
+      - 5433:5432
+
+  redis:
+    container_name: redis-springboot-redis-cache
+    image: redis:latest
+    restart: always
+    networks:
+      redis_network:
+    ports:
+      - 6379:6379
+
+  springboot-redis-cache:
+    container_name: springboot-redis-cache
+    image: javanatic/springboot-redis-cache:latest
+    restart: always
+    depends_on:
+      - postgresql
+      - redis
+    networks:
+      redis_network:
+    ports:
+      - 8080:8080
